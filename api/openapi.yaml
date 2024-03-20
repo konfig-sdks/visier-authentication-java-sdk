@@ -1,0 +1,357 @@
+openapi: 3.0.3
+info:
+  description: Visier APIs for generating authentication tokens
+  license:
+    name: "Apache License, Version 2.0"
+    url: https://www.apache.org/licenses/LICENSE-2.0
+  title: Visier Authentication APIs
+  version: 22222222.99201.1200
+  x-api-status-urls: false
+servers:
+- url: "https://{vanity-name}.api.visier.io"
+  variables:
+    vanity-name:
+      default: vanity
+tags:
+- name: Authentication
+paths:
+  /v1/admin/visierSecureTicket:
+    post:
+      deprecated: true
+      description: Generate a legacy Visier secure ticket
+      operationId: Authentication_TicketAuthentication
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        description: Secure ticket request body
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationTicketAuthenticationResponse'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthenticationTicketAuthentication200Response'
+          description: Secure ticket response
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+          description: Default error response
+      tags:
+      - Authentication
+      x-konfig-operation-can-have-single-parameter: true
+      x-konfig-single-parameter-schema: konfig-generated-schema-single-parameter-schema-post--v1-admin-visierSecureTicket
+      x-content-type: application/x-www-form-urlencoded
+      x-accepts: application/json
+  /v1/admin/visierSecureToken:
+    post:
+      deprecated: true
+      description: Generate a Visier authentication token
+      operationId: Authentication_ASIDTokenAuthentication
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthenticationRequest'
+        description: Authentication token request body
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationAsidTokenAuthenticationResponse'
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/AuthenticationAsidTokenAuthentication200Response'
+          description: Authentication token response
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+          description: Default error response
+      tags:
+      - Authentication
+      x-konfig-operation-can-have-single-parameter: true
+      x-konfig-single-parameter-schema: konfig-generated-schema-single-parameter-schema-post--v1-admin-visierSecureToken
+      x-content-type: application/x-www-form-urlencoded
+      x-accepts: application/json
+  /v1/auth/oauth2/authorize:
+    get:
+      description: Initiate an OAuth2 authorization code flow.
+      operationId: Authentication_OAuth2Authorize
+      parameters:
+      - description: The optional URI to redirect to after authorization.
+        explode: true
+        in: query
+        name: redirect_uri
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The response type. Must be `code`.
+        explode: true
+        in: query
+        name: response_type
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: The ID of the pre-registered client application.
+        explode: true
+        in: query
+        name: client_id
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: The OAuth 2.0 scope of the authorization request. Defaults to
+          `read`.
+        explode: true
+        in: query
+        name: scope
+        required: false
+        schema:
+          type: string
+        style: form
+      responses:
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+          description: Default error response
+        "3XX":
+          description: Redirect to authorization page.
+      security:
+      - ApiKeyAuth: []
+      tags:
+      - Authentication
+      x-konfig-operation-can-have-single-parameter: true
+      x-konfig-single-parameter-schema: konfig-generated-schema-single-parameter-schema-get--v1-auth-oauth2-authorize
+      x-accepts: application/json
+  /v1/auth/oauth2/token:
+    post:
+      description: Generate a JSON Web Token (JWT) for the specified user.
+      operationId: Authentication_OAuth2Token
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRequestBody'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationOAuth2Token200Response'
+            application/jwt:
+              schema:
+                $ref: '#/components/schemas/AuthenticationOAuth2TokenResponse'
+          description: JWT response
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+          description: Default error response
+      security:
+      - ApiKeyAuth: []
+      - ApiKeyAuth: []
+        BasicAuth: []
+      tags:
+      - Authentication
+      x-konfig-operation-can-have-single-parameter: true
+      x-konfig-single-parameter-schema: konfig-generated-schema-single-parameter-schema-post--v1-auth-oauth2-token
+      x-content-type: application/x-www-form-urlencoded
+      x-accepts: application/json
+components:
+  schemas:
+    AuthenticationRequest:
+      description: Basic Authentication Request Body
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      type: object
+    GoogleProtobufAny:
+      additionalProperties: true
+      description: Contains an arbitrary serialized message along with a @type that
+        describes the type of the serialized message.
+      example:
+        '@type': '@type'
+      properties:
+        '@type':
+          description: The type of the serialized message.
+          type: string
+      type: object
+    Status:
+      description: The response structure for errors.
+      example:
+        code: 0
+        details:
+        - '@type': '@type'
+        - '@type': '@type'
+        message: message
+      properties:
+        code:
+          description: "The status code, which should be an enum value of [google.rpc.Code][google.rpc.Code]."
+          format: int32
+          type: integer
+        message:
+          description: The error message returned by the server.
+          type: string
+        details:
+          description: A list of messages that carry the error details.  There is
+            a common set of message types for APIs to use.
+          items:
+            $ref: '#/components/schemas/GoogleProtobufAny'
+          type: array
+      type: object
+      x-konfig-is-used-in-successful-response: true
+    TokenResponse:
+      properties:
+        token:
+          type: string
+      type: object
+    TokenRequestBody:
+      description: Token request body definition.
+      properties:
+        grant_type:
+          description: |-
+            The grant type. Supported values:
+            - `authorization_code`: The authorization code grant type.
+            - `password`: The password grant type.
+            - `urn:visier:params:oauth:grant-type:asid-token`: The ASID token grant type.
+          type: string
+        client_id:
+          description: The ID of the pre-registered client application.
+          type: string
+        redirect_uri:
+          description: The optional URI to redirect to after authorization.
+          type: string
+        code:
+          description: The authorization code. Applicable only for authorization code
+            grant type.
+          type: string
+        username:
+          description: The username of the user to authenticate. Applicable only for
+            password grant type.
+          type: string
+        password:
+          description: The password of the user to authenticate. Applicable only for
+            password grant type.
+          type: string
+        asid_token:
+          description: The ASID token. Applicable only for ASID token grant type.
+          type: string
+      type: object
+    AuthenticationTicketAuthenticationResponse:
+      type: string
+      x-konfig-is-used-in-successful-response: true
+    AuthenticationTicketAuthentication200Response:
+      type: string
+      x-konfig-is-used-in-successful-response: true
+    AuthenticationAsidTokenAuthenticationResponse:
+      type: string
+      x-konfig-is-used-in-successful-response: true
+    AuthenticationAsidTokenAuthentication200Response:
+      type: string
+      x-konfig-is-used-in-successful-response: true
+    AuthenticationOAuth2TokenResponse:
+      type: string
+      x-konfig-is-used-in-successful-response: true
+    AuthenticationOAuth2Token200Response:
+      type: string
+      x-konfig-is-used-in-successful-response: true
+    konfig-generated-schema-single-parameter-schema-post--v1-admin-visierSecureTicket:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      type: object
+      x-do-not-generate: true
+      x-konfig-is-parameter: []
+    konfig-generated-schema-single-parameter-schema-post--v1-admin-visierSecureToken:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      type: object
+      x-do-not-generate: true
+      x-konfig-is-parameter: []
+    konfig-generated-schema-single-parameter-schema-get--v1-auth-oauth2-authorize:
+      properties:
+        redirect_uri:
+          type: string
+        response_type:
+          type: string
+        client_id:
+          type: string
+        scope:
+          type: string
+      required:
+      - client_id
+      - response_type
+      type: object
+      x-do-not-generate: true
+      x-konfig-is-parameter:
+      - redirect_uri
+      - response_type
+      - client_id
+      - scope
+    konfig-generated-schema-single-parameter-schema-post--v1-auth-oauth2-token:
+      properties:
+        grant_type:
+          description: |-
+            The grant type. Supported values:
+            - `authorization_code`: The authorization code grant type.
+            - `password`: The password grant type.
+            - `urn:visier:params:oauth:grant-type:asid-token`: The ASID token grant type.
+          type: string
+        client_id:
+          description: The ID of the pre-registered client application.
+          type: string
+        redirect_uri:
+          description: The optional URI to redirect to after authorization.
+          type: string
+        code:
+          description: The authorization code. Applicable only for authorization code
+            grant type.
+          type: string
+        username:
+          description: The username of the user to authenticate. Applicable only for
+            password grant type.
+          type: string
+        password:
+          description: The password of the user to authenticate. Applicable only for
+            password grant type.
+          type: string
+        asid_token:
+          description: The ASID token. Applicable only for ASID token grant type.
+          type: string
+      type: object
+      x-do-not-generate: true
+      x-konfig-is-parameter: []
+  securitySchemes:
+    BasicAuth:
+      scheme: basic
+      type: http
+      x-konfig-globally-required-security: false
+    ApiKeyAuth:
+      in: header
+      name: apikey
+      type: apiKey
+      x-konfig-globally-required-security: false
+
